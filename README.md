@@ -91,34 +91,42 @@ La documentación de la API en http://127.0.0.1:8000/docs
 
     orderflow-genai/
     ├── app/
-    │   ├── main.py          # Entry point FastAPI
-    │   ├── database.py      # Conexión y sesión SQLite
-    │   ├── models.py        # Modelos SQLAlchemy (Pedido, Usuario)
-    │   ├── security.py      # JWT, hash de contraseñas, dependencias auth
-    │   ├── backup.py        # Scheduler de backups automáticos
-    │   ├── routes/
-    │   │   ├── auth.py      # POST /api/auth/login
-    │   │   ├── pedidos.py   # CRUD /api/pedidos
-    │   │   ├── historico.py # GET /api/historico
-    │   │   └── usuarios.py  # /api/usuarios (solo admin)
+    │   ├── __init__.py
+    │   ├── main.py              # Entry point FastAPI
+    │   ├── database.py          # Conexión SQLite y sesión
+    │   ├── models.py            # Modelos SQLAlchemy (Pedido, Usuario)
+    │   ├── security.py          # JWT, bcrypt, dependencias auth
+    │   ├── backup.py            # Scheduler de backups automáticos
+    │   └── routes/
+    │       ├── __init__.py
+    │       ├── auth.py          # POST /api/auth/login
+    │       ├── pedidos.py       # CRUD /api/pedidos
+    │       ├── historico.py     # GET /api/historico + exportar CSV
+    │       └── usuarios.py      # /api/usuarios (solo admin)
     │   └── static/
-    │       └── index.html   # Frontend Kanban
+    │       └── index.html       # Frontend Kanban (HTML + Vanilla JS)
     ├── tests/
-    │   ├── conftest.py      # Fixtures compartidos
-    │   ├── test_auth.py
-    │   ├── test_pedidos.py
-    │   └── test_historico.py
+    │   ├── conftest.py          # Fixtures y BD de test
+    │   ├── test_auth.py         # 5 tests de autenticación
+    │   ├── test_pedidos.py      # 9 tests de pedidos
+    │   └── test_historico.py    # 4 tests de histórico
     ├── docs/
     │   ├── 01_Analisis_funcional_y_requisitos.md
     │   ├── 02_Historias_de_usuario.md
     │   ├── 03_Diseno_tecnico_y_propuesta.md
+    │   ├── 04_Plan_de_pruebas.md
     │   └── screenshots/
+    ├── memory-bank/
+    │   └── decisiones.md        # Decisiones técnicas y deuda pendiente
     ├── prompts/
-    │   └── prompts_usados.md
-    ├── create_admin.py
-    ├── pytest.ini
+    │   └── prompts_usados.md    # Prompts de Claude y Copilot
+    ├── conftest.py              # Configuración raíz pytest
+    ├── pytest.ini               # Configuración pytest (pythonpath)
+    ├── create_admin.py          # Script para crear usuario admin
     ├── requirements.txt
-    └── .env.example
+    ├── .env.example
+    ├── .gitignore
+    └── README.md
 
 ---
 
