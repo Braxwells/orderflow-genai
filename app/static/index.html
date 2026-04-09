@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OrderFlow</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+    }
+
+    /* NAV */
+    nav {
+      background: #1a3c5e;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    nav .logo { color: #e8a838; font-size: 1.3rem; font-weight: 700; }
+    nav .nav-links { display: flex; gap: 1rem; align-items: center; }
+    nav button {
+      background: none; border: 1px solid #e8a838;
+      color: #e8a838; padding: .4rem 1rem;
+      border-radius: 4px; cursor: pointer; font-size: .85rem;
+    }
+    nav button:hover { background: #e8a838; color: #1a3c5e; }
+    nav span { color: #ccc; font-size: .85rem; }
+
+    /* LOGIN */
+    #login-screen {
+      display: flex; align-items: center;
+      justify-content: center; min-height: 100vh;
+    }
+    .login-box {
+      background: white; padding: 2.5rem;
+      border-radius: 12px; width: 360px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.1);
+    }
+    .login-box h2 { color: #1a3c5e; margin-bottom: .5rem; }
+    .login-box p { color: #888; font-size: .9rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%; padding: .7rem 1rem;
+      border: 1px solid #ddd; border-radius: 6px;
+      margin-bottom: 1rem; font-size: 1rem;
+    }
+    .login-box input:focus { outline: none; border-color: #1a3c5e; }
+    .btn-primary {
+      width: 100%; padding: .8rem;
+      background: #1a3c5e; color: white;
+      border: none; border-radius: 6px;
+      font-size: 1rem; cursor: pointer; font-weight: 600;
+    }
+    .btn-primary:hover { background: #2e6da4; }
+    #login-error { color: #c0392b; font-size: .85rem; margin-top: .5rem; text-align: center; }
+
+    /* MAIN */
+    #main-screen { display: none; }
+
+    .toolbar {
+      background: white; padding: 1rem 2rem;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e0e0e0;
+      flex-wrap: wrap; gap: .5rem;
+    }
+    .tabs { display: flex; gap: .5rem; }
+    .tab {
+      padding: .5rem 1.2rem; border-radius: 20px;
+      border: none; cursor: pointer;
+      font-size: .85rem; font-weight: 600;
+      background: #f0f2f5; color: #555;
+    }
+    .tab.active { background: #1a3c5e; color: white; }
+    .btn-new {
+      background: #e8a838; color: #1a3c5e;
+      border: none; padding: .5rem 1.2rem;
+      border-radius: 6px; font-weight: 700;
+      cursor: pointer; font-size: .9rem;
+    }
+    .btn-new:hover { background: #d4922a; }
+
+    /* PANEL KANBAN */
+    #panel-pedidos {
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .columna {
+      background: white; border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      overflow: hidden;
+    }
+    .columna-header {
+      padding: .8rem 1.2rem;
+      font-weight: 700; font-size: .9rem;
+      display: flex; justify-content: space-between;
+      align-items: center;
+    }
+    .col-pendiente .columna-header { background: #fff3cd; color: #856404; }
+    .col-en_proceso .columna-header { background: #cce5ff; color: #004085; }
+    .col-enviado .columna-header { background: #d4edda; color: #155724; }
+    .badge {
+      background: rgba(0,0,0,.1); border-radius: 20px;
+      padding: .1rem .6rem; font-size: .8rem;
+    }
+    .columna-body { padding: .8rem; min-height: 200px; }
+
+    /* TARJETA */
+    .tarjeta {
+      background: #f8f9fa; border-radius: 8px;
+      padding: 1rem; margin-bottom: .8rem;
+      border-left: 4px solid #1a3c5e;
+      transition: box-shadow .2s;
+    }
+    .tarjeta:hover { box-shadow: 0 2px 12px rgba(0,0,0,.1); }
+    .tarjeta-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: .5rem;
+    }
+    .tarjeta-cliente { font-weight: 700; font-size: .95rem; }
+    .canal-badge {
+      font-size: .7rem; padding: .2rem .5rem;
+      border-radius: 10px; font-weight: 600;
+    }
+    .canal-whatsapp { background: #25D366; color: white; }
+    .canal-email { background: #4285F4; color: white; }
+    .tarjeta-articulo { color: #555; font-size: .85rem; margin-bottom: .3rem; }
+    .tarjeta-meta {
+      display: flex; gap: .5rem;
+      font-size: .8rem; color: #888; margin-bottom: .8rem;
+    }
+    .tarjeta-precio { font-weight: 700; color: #1a3c5e; }
+    .tarjeta-acciones { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .btn-estado {
+      font-size: .75rem; padding: .3rem .7rem;
+      border-radius: 4px; border: none; cursor: pointer; font-weight: 600;
+    }
+    .btn-avanzar { background: #1a3c5e; color: white; }
+    .btn-avanzar:hover { background: #2e6da4; }
+    .btn-retroceder { background: #f0f2f5; color: #555; }
+    .btn-retroceder:hover { background: #ddd; }
+    .btn-editar { background: #e8a838; color: #1a3c5e; }
+    .btn-editar:hover { background: #d4922a; }
+
+    /* HISTÓRICO */
+    #panel-historico { display: none; padding: 1.5rem 2rem; }
+    .historico-toolbar {
+      display: flex; gap: 1rem; margin-bottom: 1rem;
+      align-items: center; flex-wrap: wrap;
+    }
+    .historico-toolbar input {
+      padding: .5rem 1rem; border: 1px solid #ddd;
+      border-radius: 6px; font-size: .9rem; flex: 1; min-width: 200px;
+    }
+    .btn-export {
+      background: #1a3c5e; color: white; border: none;
+      padding: .5rem 1.2rem; border-radius: 6px;
+      cursor: pointer; font-size: .85rem; font-weight: 600;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+      background: white; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    th {
+      background: #1a3c5e; color: white;
+      padding: .8rem 1rem; text-align: left; font-size: .85rem;
+    }
+    td { padding: .7rem 1rem; font-size: .85rem; border-bottom: 1px solid #f0f0f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9fa; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 12px;
+      padding: 2rem; width: 440px; max-width: 95vw;
+    }
+    .modal h3 { color: #1a3c5e; margin-bottom: 1.5rem; font-size: 1.1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; color: #444; }
+    .form-group input, .form-group select {
+      width: 100%; padding: .6rem .9rem;
+      border: 1px solid #ddd; border-radius: 6px; font-size: .95rem;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #1a3c5e; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .modal-footer { display: flex; gap: .8rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel {
+      padding: .6rem 1.2rem; border: 1px solid #ddd;
+      background: white; border-radius: 6px; cursor: pointer;
+    }
+    .btn-save {
+      padding: .6rem 1.4rem; background: #1a3c5e;
+      color: white; border: none; border-radius: 6px;
+      cursor: pointer; font-weight: 600;
+    }
+    .btn-save:hover { background: #2e6da4; }
+
+    .empty { text-align: center; color: #bbb; font-size: .9rem; padding: 2rem 0; }
+
+    @media (max-width: 768px) {
+      #panel-pedidos { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>OrderFlow</h2>
+    <p>Sistema de gestión de pedidos</p>
+    <input type="text" id="username" placeholder="Usuario" />
+    <input type="password" id="password" placeholder="Contraseña" />
+    <button class="btn-primary" onclick="login()">Entrar</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-screen">
+  <nav>
+    <span class="logo">OrderFlow</span>
+    <div class="nav-links">
+      <span id="nav-user"></span>
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab active" onclick="showPanel('pedidos', this)">📦 Pedidos</button>
+      <button class="tab" onclick="showPanel('historico', this)">📋 Histórico</button>
+    </div>
+    <button class="btn-new" onclick="abrirModal()">+ Nuevo pedido</button>
+  </div>
+
+  <!-- KANBAN -->
+  <div id="panel-pedidos">
+    <div class="columna col-pendiente">
+      <div class="columna-header">
+        🟡 Pendiente
+        <span class="badge" id="count-pendiente">0</span>
+      </div>
+      <div class="columna-body" id="col-pendiente"></div>
+    </div>
+    <div class="columna col-en_proceso">
+      <div class="columna-header">
+        🔵 En proceso
+        <span class="badge" id="count-en_proceso">0</span>
+      </div>
+      <div class="columna-body" id="col-en_proceso"></div>
+    </div>
+    <div class="columna col-enviado">
+      <div class="columna-header">
+        🟢 Enviado
+        <span class="badge" id="count-enviado">0</span>
+      </div>
+      <div class="columna-body" id="col-enviado"></div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div id="panel-historico">
+    <div class="historico-toolbar">
+      <input type="text" id="search-historico" placeholder="Buscar por cliente o artículo..." oninput="cargarHistorico()" />
+      <button class="btn-export" onclick="exportarCSV()">⬇ Exportar CSV</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th><th>Artículo</th><th>Talla</th>
+          <th>Precio</th><th>Canal</th><th>Creado</th><th>Enviado</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-historico"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL NUEVO/EDITAR PEDIDO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-titulo">Nuevo pedido</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" id="f-cliente" placeholder="Nombre del cliente" />
+      </div>
+      <div class="form-group">
+        <label>Canal</label>
+        <select id="f-canal">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Artículo</label>
+      <input type="text" id="f-articulo" placeholder="Descripción del artículo" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Talla</label>
+        <input type="text" id="f-talla" placeholder="XS, S, M, L, XL..." />
+      </div>
+      <div class="form-group">
+        <label>Precio (€)</label>
+        <input type="number" id="f-precio" placeholder="0.00" step="0.01" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-save" onclick="guardarPedido()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:8000/api';
+  let token = localStorage.getItem('token') || null;
+  let editandoId = null;
+
+  // ── AUTH ──────────────────────────────────────────
+  async function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const form = new URLSearchParams({ username, password });
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST', body: form,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      token = data.access_token;
+      localStorage.setItem('token', token);
+      document.getElementById('nav-user').textContent = `👤 ${data.nombre}`;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-screen').style.display = 'block';
+      cargarPedidos();
+    } catch {
+      document.getElementById('login-error').textContent = 'Usuario o contraseña incorrectos';
+    }
+  }
+
+  function logout() {
+    token = null;
+    localStorage.removeItem('token');
+    document.getElementById('main-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+  }
+
+  function headers() {
+    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+  }
+
+  // ── PANELS ────────────────────────────────────────
+  function showPanel(panel, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-pedidos').style.display  = panel === 'pedidos'  ? 'grid' : 'none';
+    document.getElementById('panel-historico').style.display = panel === 'historico' ? 'block' : 'none';
+    if (panel === 'historico') cargarHistorico();
+    if (panel === 'pedidos')   cargarPedidos();
+  }
+
+  // ── PEDIDOS ───────────────────────────────────────
+  async function cargarPedidos() {
+    const res = await fetch(`${API}/pedidos/`, { headers: headers() });
+    const pedidos = await res.json();
+
+    ['pendiente', 'en_proceso', 'enviado'].forEach(e => {
+      document.getElementById(`col-${e}`).innerHTML = '';
+      document.getElementById(`count-${e}`).textContent = 0;
+    });
+
+    pedidos.forEach(p => renderTarjeta(p));
+  }
+
+  function renderTarjeta(p) {
+    const col = document.getElementById(`col-${p.estado}`);
+    if (!col) return;
+    const counter = document.getElementById(`count-${p.estado}`);
+    counter.textContent = parseInt(counter.textContent) + 1;
+
+    const fecha = new Date(p.fecha_creacion).toLocaleDateString('es-ES');
+    const anterior = { pendiente: null, en_proceso: 'pendiente', enviado: 'en_proceso' };
+    const siguiente = { pendiente: 'en_proceso', en_proceso: 'enviado', enviado: null };
+
+    const div = document.createElement('div');
+    div.className = 'tarjeta';
+    div.innerHTML = `
+      <div class="tarjeta-header">
+        <span class="tarjeta-cliente">${p.cliente}</span>
+        <span class="canal-badge canal-${p.canal}">${p.canal === 'whatsapp' ? '📱 WA' : '📧 Email'}</span>
+      </div>
+      <div class="tarjeta-articulo">${p.articulo}</div>
+      <div class="tarjeta-meta">
+        <span>📏 ${p.talla}</span>
+        <span>📅 ${fecha}</span>
+      </div>
+      <div class="tarjeta-precio">€${p.precio.toFixed(2)}</div>
+      <div class="tarjeta-acciones" style="margin-top:.6rem">
+        ${anterior[p.estado] ? `<button class="btn-estado btn-retroceder" onclick="cambiarEstado(${p.id},'${anterior[p.estado]}')">← ${anterior[p.estado].replace('_',' ')}</button>` : ''}
+        ${siguiente[p.estado] ? `<button class="btn-estado btn-avanzar" onclick="cambiarEstado(${p.id},'${siguiente[p.estado]}')">→ ${siguiente[p.estado].replace('_',' ')}</button>` : ''}
+        ${p.estado !== 'enviado' ? `<button class="btn-estado btn-editar" onclick="abrirModal(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏ Editar</button>` : ''}
+      </div>
+    `;
+    col.appendChild(div);
+  }
+
+  async function cambiarEstado(id, estado) {
+    await fetch(`${API}/pedidos/${id}/estado`, {
+      method: 'PATCH', headers: headers(),
+      body: JSON.stringify({ estado })
+    });
+    cargarPedidos();
+  }
+
+  // ── MODAL ─────────────────────────────────────────
+  function abrirModal(pedido = null) {
+    editandoId = pedido ? pedido.id : null;
+    document.getElementById('modal-titulo').textContent = pedido ? 'Editar pedido' : 'Nuevo pedido';
+    document.getElementById('f-cliente').value  = pedido?.cliente  || '';
+    document.getElementById('f-articulo').value = pedido?.articulo || '';
+    document.getElementById('f-talla').value    = pedido?.talla    || '';
+    document.getElementById('f-precio').value   = pedido?.precio   || '';
+    document.getElementById('f-canal').value    = pedido?.canal    || 'whatsapp';
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').classList.remove('open');
+    editandoId = null;
+  }
+
+  async function guardarPedido() {
+    const body = {
+      cliente:  document.getElementById('f-cliente').value.trim(),
+      articulo: document.getElementById('f-articulo').value.trim(),
+      talla:    document.getElementById('f-talla').value.trim(),
+      precio:   parseFloat(document.getElementById('f-precio').value),
+      canal:    document.getElementById('f-canal').value,
+    };
+    if (!body.cliente || !body.articulo || !body.talla || isNaN(body.precio)) {
+      alert('Completa todos los campos'); return;
+    }
+    if (editandoId) {
+      await fetch(`${API}/pedidos/${editandoId}`, {
+        method: 'PUT', headers: headers(), body: JSON.stringify(body)
+      });
+    } else {
+      await fetch(`${API}/pedidos/`, {
+        method: 'POST', headers: headers(), body: JSON.stringify(body)
+      });
+    }
+    cerrarModal();
+    cargarPedidos();
+  }
+
+  // ── HISTÓRICO ─────────────────────────────────────
+  async function cargarHistorico() {
+    const q = document.getElementById('search-historico').value;
+    const url = q ? `${API}/historico/?q=${encodeURIComponent(q)}` : `${API}/historico/`;
+    const res = await fetch(url, { headers: headers() });
+    const pedidos = await res.json();
+    const tbody = document.getElementById('tabla-historico');
+    tbody.innerHTML = pedidos.length === 0
+      ? '<tr><td colspan="7" class="empty">No hay pedidos en el histórico</td></tr>'
+      : pedidos.map(p => `
+          <tr>
+            <td><strong>${p.cliente}</strong></td>
+            <td>${p.articulo}</td>
+            <td>${p.talla}</td>
+            <td><strong>€${p.precio.toFixed(2)}</strong></td>
+            <td><span class="canal-badge canal-${p.canal}">${p.canal}</span></td>
+            <td>${new Date(p.fecha_creacion).toLocaleDateString('es-ES')}</td>
+            <td>${p.fecha_envio ? new Date(p.fecha_envio).toLocaleDateString('es-ES') : '-'}</td>
+          </tr>`).join('');
+  }
+
+  async function exportarCSV() {
+    const res = await fetch(`${API}/historico/export`, { headers: headers() });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'historico_orderflow.csv';
+    a.click();
+  }
+
+  // ── INIT ──────────────────────────────────────────
+  if (token) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-screen').style.display = 'block';
+    cargarPedidos();
+  }
+
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+</script>
+</body>
+</html>
