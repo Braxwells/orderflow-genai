@@ -6,6 +6,19 @@ completo con herramientas de IA generativa.
 
 ---
 
+## 📚 Documentación del proyecto
+
+| Documento | Descripción |
+|-----------|-------------|
+| [📋 Análisis funcional y requisitos](docs/01_Analisis_funcional_y_requisitos.md) | Actores, RF, RNF, restricciones y riesgos |
+| [👤 Historias de usuario](docs/02_Historias_de_usuario.md) | Backlog completo con épicas y criterios de aceptación |
+| [🛠️ Diseño técnico](docs/03_Diseno_tecnico_y_propuesta.md) | Arquitectura, stack, modelo de datos y API |
+| [🧪 Plan de pruebas](docs/04_Plan_de_pruebas.md) | Casos de prueba, trazabilidad y resultados |
+| [🧠 Decisiones técnicas](memory-bank/decisiones.md) | Memory bank con decisiones y deuda técnica |
+| [🤖 Prompts utilizados](prompts/prompts_usados.md) | Prompts de Claude y Copilot usados en el proyecto |
+
+---
+
 ## 🎯 Problema que resuelve
 
 La tienda gestionaba los pedidos manualmente en Excel: un archivo activo y otro
